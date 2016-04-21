@@ -8,6 +8,10 @@ function canvasSupport () {
   return Modernizr.canvas;
 }
 
+function cl(exp){
+	console.log(exp);
+}
+
 function canvasApp () {
 
   if (!canvasSupport()) {
@@ -18,17 +22,20 @@ function canvasApp () {
 	var context = theCanvas.getContext("2d");
 
   function drawScreen() {
+		// properities
 		width = 1200;
 		height = 800;
 
 		//background
-		// context.globalAlpha = .5;
+		context.globalAlpha = 1;
 		context.fillStyle = "#000000";
     context.fillRect(0, 0, 1200, 800);
 
 		//image
     context.globalAlpha = .25;
-		context.drawImage(nebulaImg, 0, 0);
+		context.drawImage(nebulaImg, 0, 0, 1200, 800);
+		context.globalAlpha = 1;
+
 
 		//text
 		context.font         = "72px Monospace";
@@ -42,21 +49,13 @@ function canvasApp () {
 			}
 		} else {
 			alpha -= 0.01;
-			if (alpha < 0)  {
-				alpha = 0;
+			if (alpha < .2)  {
+				alpha = .2;
 				fadeIn = true;
 			}
 		}
 
-		context.globalAlpha = alpha;
-		context.fillStyle    = "#FFFFFF";
-		context.textAlign = "center";
-		context.fillText  (text, 600,400);
-
-		// sets drawing opacity to max for rest of objects rendered in game loop.
-		context.globalAlpha = 1;
-
-		//diamond marker
+		// helper functions
 		function angledMarker(x,y,width,height,angle) {
 			context.lineWidth = 3;
 			context.shadowBlur = 20;
@@ -81,32 +80,6 @@ function canvasApp () {
 			context.strokeRect(-0.5*width, -0.5*height, width, height);
 		}
 
-
-		// reset origin
-		context.setTransform(1,0,0,1,0,0);
-		context.shadowColor = "#000000";
-
-		context.strokeStyle = "#7dffff";
-		context.lineWidth = 2;
-		context.setLineDash([4,6]);
-		context.beginPath();
-		context.moveTo(200,50);
-		context.lineTo(178,133);
-		context.lineTo(155,100);
-		context.lineTo(115,115);
-		context.lineTo(100,150);
-		context.stroke();
-		context.closePath();
-		context.setLineDash([0]);
-
-		context.fillStyle = "#f6d62b";
-		context.strokeStyle ="#FFFFFF";
-		angledMarker(200,50,10,10,inRads(45));
-		angledMarker(178,133,10,10,inRads(45));
-		angledMarker(155,100,10,10,inRads(45));
-		angledMarker(115,115,10,10,inRads(45));
-		angledMarker(100,150,10,10,inRads(45));
-
 		function plotPaths(coordsList) {
 			var firstPoint = coordsList[0];
 			context.strokeStyle = "#7dffff";
@@ -130,47 +103,94 @@ function canvasApp () {
 			context.shadowBlur = 20;
 			context.shadowColor = "#c164fa";
 
-			while(coordsList.length > 0) {
-				nextPoint = coordsList.pop();
+			for(i=0; i<coordsList.length; i++){
+				nextPoint = coordsList[i];
 
+				context.globalAlpha = alpha;
 				context.lineWidth = 1;
 				context.beginPath();
 				context.arc(nextPoint[0],nextPoint[1],5,0,2*Math.PI);
 				context.stroke();
 				context.closePath();
 
+				context.globalAlpha = 1;
 				context.lineWidth = 3;
 				context.beginPath();
 				context.arc(nextPoint[0],nextPoint[1],1,0,2*Math.PI);
 				context.stroke();
 				context.closePath();
 			}
+
 			context.shadowColor = "#000000";
+			context.globalAlpha = 1;
 		}
 
-		// try drawing second constellation with array of arrays...?
-		var casseopeia = [[95,500],[120,552],[145,526],[170,560],[210,530]];
+		function scaler(coordArray, scale){
+			xList = [];
+			yList = [];
+
+			function findMin(arr) {
+				min = arr[0];
+				for(i=1; i<arr.length; i++) {
+					if (arr[i] < min) {
+						min = arr[i];
+					}
+				}
+				return min;
+			}
+
+			for (i=0; i<coordArray.length; i++){
+				pair = coordArray[i];
+				cl(pair);
+				xList.push(pair[0]);
+				console.log(xList);
+				yList.push(pair[1]);
+			}
+
+			xMin = findMin(xList);
+			yMin = findMin(yList);
+			console.log(xMin);
+
+			for (i=0; i<coordArray.length; i++){
+				pair = coordArray[i];
+				x = pair[0] - xMin/scale;
+				y = pair[1] - yMin/scale;
+				x = x * scale;
+				y = y * scale;
+				pair[0] = x;
+				pair[1] = y;
+				coordArray[i] = pair;
+			}
+			console.log(coordArray.toString());
+			return coordArray;
+
+		}
+
+		var donkey = [[300,50],[256,216],[210,150],[130,180],[100,250]];
+		var casseopeia = [[95,500],[145,604],[195,552],[245,620],[325,560]];
+
 		plotPaths(casseopeia);
 		plotPoints(casseopeia);
-		// debugger;
 
+		plotPaths(donkey);
+		plotPoints(donkey);
 
 	} // end of drawScreen
 
-		var text = "Pythonic Cosmos";
-		var alpha = 0;
-		var fadeIn = true;
+	var text = "Pythonic Cosmos";
+	var alpha = .5;
+	var fadeIn = true;
 
-		//image
-		var nebulaImg = new Image();
-		nebulaImg.src = "images/nebula.jpg";
+	//image
+	var nebulaImg = new Image();
+	nebulaImg.src = "images/nebula.jpg";
 
-		function gameLoop() {
-			window.setTimeout(gameLoop, 20);
-			drawScreen();
-		}
+	function gameLoop() {
+		window.setTimeout(gameLoop, 20);
+		drawScreen();
+	}
 
-		gameLoop();
+	gameLoop();
 
 }
 
