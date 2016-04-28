@@ -8,8 +8,28 @@ function canvasSupport () {
   return Modernizr.canvas;
 }
 
-function cl(exp){
-	console.log(exp);
+var Rectangle = function(x,y,width,height,fill){
+	this.x = x || 0;
+	this.y = y || 0;
+	this.width = width || 1;
+	this.height = height || 1;
+	this.fill = fill || "#AAAAAA";
+}
+
+Rectangle.prototype.draw = function(context) {
+	context.fillStyle = this.fill;
+	context.fillRect(this.x, this.y, this.width, this.height);
+}
+
+Rectangle.prototype.contains = function(mx, my) {
+	return (this.x <= mx) && (this.x + this.width >= mx) && (this.y <= my) && (this.y + this.heigt >= my);
+}
+
+var testShape = {
+	x: 500,
+	y: 500,
+	width: 100,
+	height: 100
 }
 
 function canvasApp () {
@@ -18,22 +38,29 @@ function canvasApp () {
 	return;
   }
 
-	var theCanvas = document.getElementById("canvasOne");
-	var context = theCanvas.getContext("2d");
+	var canvas = document.getElementById("canvasOne");
+	var context = canvas.getContext("2d");
+
+	var stage, mx, my;
+
+	var starAlphaMin = 0.3;
+	var starAlphaMax = 0.8;
+
+	var donkey = [[300,50],[256,216],[210,150],[130,180],[100,250]];
+	var casseopeia = [[95,500],[145,604],[195,552],[245,620],[325,560]];
 
   function drawScreen() {
 		// properities
-		width = 1200;
-		height = 800;
+
 
 		//background
 		context.globalAlpha = 1;
 		context.fillStyle = "#000000";
-    context.fillRect(0, 0, 1200, 800);
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
 		//image
     context.globalAlpha = .25;
-		context.drawImage(nebulaImg, 0, 0, 1200, 800);
+		context.drawImage(nebulaImg, 0, 0, canvas.width, canvas.height);
 		context.globalAlpha = 1;
 
 
@@ -41,49 +68,56 @@ function canvasApp () {
 		context.font         = "72px Monospace";
 		context.textBaseline = "top";
 
+		// it's possible to store fadeIn as a property in an object.
+		// Each star would be an object.
+		// it's properties could be x, y, waxing (getting brighter),...
+		// you could even store the challenge name, badges, and description text
+		// in the object...
+		// Here you would loop throught the star ojects.  Maybe you'd store
+		// them in an array.
+		// also, you could store
 		if (fadeIn1) {
-			alpha1 += 0.01;
-			if (alpha1 >= 1)  {
-				alpha1 = 1;
+			alpha1 += 0.005;
+			if (alpha1 >= starAlphaMax)  {
+				alpha1 = starAlphaMax;
 				fadeIn1 = false;
 			}
 		} else {
-			alpha1 -= 0.01;
-			if (alpha1 < .2)  {
-				alpha1 = .2;
+			alpha1 -= 0.005;
+			if (alpha1 < starAlphaMin)  {
+				alpha1 = starAlphaMin;
 				fadeIn1 = true;
 			}
 		}
 
 		if (fadeIn2) {
-			alpha2 += 0.01;
-			if (alpha2 >= 1)  {
-				alpha2 = 1;
+			alpha2 += 0.005;
+			if (alpha2 >= starAlphaMax)  {
+				alpha2 = starAlphaMax;
 				fadeIn2 = false;
 			}
 		} else {
-			alpha2 -= 0.01;
-			if (alpha2 < .2)  {
-				alpha2 = .2;
+			alpha2 -= 0.005;
+			if (alpha2 < starAlphaMin)  {
+				alpha2 = starAlphaMin;
 				fadeIn2 = true;
 			}
 		}
 
 		if (fadeIn3) {
-			alpha3 += 0.01;
-			if (alpha3 >= 1)  {
-				alpha3 = 1;
+			alpha3 += 0.005;
+			if (alpha3 >= starAlphaMax)  {
+				alpha3 = starAlphaMax;
 				fadeIn3 = false;
 			}
 		} else {
-			alpha3 -= 0.01;
-			if (alpha3 < .2)  {
-				alpha3 = .2;
+			alpha3 -= 0.005;
+			if (alpha3 < starAlphaMin)  {
+				alpha3 = starAlphaMin;
 				fadeIn3 = true;
 			}
 		}
 
-		// helper functions
 		function angledMarker(x,y,width,height,angle) {
 			context.lineWidth = 3;
 			context.shadowBlur = 20;
@@ -98,15 +132,22 @@ function canvasApp () {
 			context.shadowColor = "#000000";
 		}
 
-		function circleMarker(x,y,width,height) {
+		function drawRect(x,y,width,height) {
 			context.lineWidth = 3;
 			context.shadowBlur = 20;
 			context.shadowColor = "#c164fa";
 			context.translate(x, y);
-			context.rotate(angle);
 			context.fillRect(-0.5*width, -0.5*height, width, height);
 			context.strokeRect(-0.5*width, -0.5*height, width, height);
+
+			// reset origin
+			context.setTransform(1,0,0,1,0,0);
+			context.shadowColor = "#000000";
 		}
+
+
+
+
 
 		function plotPaths(coordsList) {
 			var firstPoint = coordsList[0];
@@ -122,7 +163,6 @@ function canvasApp () {
 			context.stroke();
 			context.closePath();
 			context.setLineDash([0]);
-			// debugger;
 		}
 
 		function plotPoints(coordsList) {
@@ -147,7 +187,7 @@ function canvasApp () {
 					nimbus = 9;
 				}
 
-				context.lineWidth = 1;
+				context.lineWidth = 2;
 				context.beginPath();
 				context.arc(nextPoint[0],nextPoint[1],nimbus,0,2*Math.PI);
 				context.stroke();
@@ -183,13 +223,12 @@ function canvasApp () {
 				pair = coordArray[i];
 				cl(pair);
 				xList.push(pair[0]);
-				console.log(xList);
 				yList.push(pair[1]);
 			}
 
 			xMin = findMin(xList);
 			yMin = findMin(yList);
-			console.log(xMin);
+
 
 			for (i=0; i<coordArray.length; i++){
 				pair = coordArray[i];
@@ -201,19 +240,43 @@ function canvasApp () {
 				pair[1] = y;
 				coordArray[i] = pair;
 			}
-			console.log(coordArray.toString());
+
 			return coordArray;
 
 		}
 
-		var donkey = [[300,50],[256,216],[210,150],[130,180],[100,250]];
-		var casseopeia = [[95,500],[145,604],[195,552],[245,620],[325,560]];
+		function mousePos(event) {
+			stage = canvas.getBoundingClientRect();  // should be background
+			mx = event.clientX - stage.left;  // also, stage, mx, my are global in canvasAPP
+			my = event.clientY - stage.top;
+			$("#debug-mouse").html(Math.round(mx) + " || " + Math.round(my));
+		}
+
+		// event handlers
+		$(canvas).mousemove(function(event){
+			mousePos(event);
+		});
+
+
+		// draw stuff
+		// var Rect1 = new Rectangle(700, 300, 50, 50, "#777777");
+		context.fillStyle = "#aa0000";
+		context.fillRect(testShape.x, testShape.y, testShape.width, testShape.height);
 
 		plotPaths(casseopeia);
 		plotPoints(casseopeia);
 
 		plotPaths(donkey);
 		plotPoints(donkey);
+
+		// hit testing
+		if ((mx >= testShape.x) && (mx <= testShape.x + testShape.width) && (my >= testShape.y) && (my <= testShape.y + testShape.height)){
+			context.fillStyle = "#aa0000";
+			context.shadowBlur = 10;
+			context.shadowColor = "#FFFFFF";
+			context.fillRect(testShape.x, testShape.y, testShape.width, testShape.height);
+			context.shadowBlur = 0;
+		}
 
 	} // end of drawScreen
 
@@ -233,6 +296,7 @@ function canvasApp () {
 	function gameLoop() {
 		window.setTimeout(gameLoop, 20);
 		drawScreen();
+		// debugger;
 	}
 
 	gameLoop();
