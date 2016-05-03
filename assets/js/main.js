@@ -352,13 +352,21 @@ function canvasApp () {
 	var nebulaImg = new Image();
 	nebulaImg.src = "images/nebula.jpg";
 
+	// function gameLoop() {
+	// 	window.setTimeout(gameLoop, 50);
+	// 	drawScreen();
+	// 	// debugger;
+	// }
+	//
+	// gameLoop();
+
 	function gameLoop() {
-		window.setTimeout(gameLoop, 50);
+		requestAnimationFrame(gameLoop);
 		drawScreen();
 		// debugger;
 	}
 
-	gameLoop();
+	requestAnimationFrame(gameLoop);
 
 }
 
