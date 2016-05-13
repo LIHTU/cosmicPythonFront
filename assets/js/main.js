@@ -28,17 +28,20 @@ function canvasApp () {
 
   if (!canvasSupport()) {
 	return;
-  }
+}
 
 	var canvas = document.getElementById("canvasOne");
 	var context = canvas.getContext("2d");
 
   var stage = canvas.getBoundingClientRect();  // should be background
-	var mx = 200;
-	var my = 200;
-	var ts, elapsed, lasttime, star;
+	var mx, my;
+	var onCassyStar = false;
+	var onDonkeyStar;
+
+	var star;
 	var donkeyHover = false;
 	var cassyHover = false;
+	var xOrig, yOrig;
 
 	var starAlphaMin = 0.3;
 	var starAlphaMax = 0.8;
@@ -49,13 +52,6 @@ function canvasApp () {
 		r: 160
 	}
 
-	var cassyObj = {
-		x: 205,
-		y: 560,
-		r: 140
-	}
-
-
 	// may want to make hover a function; Hell, may want to use OOP on Star Object...
 	// var donkey = [[300,50],[256,216],[210,150],[130,180],[100,250]];
 	star1 = { x: 300, y: 65, name: 'star1', hover: false, desc: "Learn to mutate strings."};
@@ -63,17 +59,37 @@ function canvasApp () {
 	star3 = { x: 210, y: 165, name: 'star3', hover: false, desc: "Some description can go here." };
 	star4 = { x: 130, y: 195, name: 'star4', hover: false, desc: "Some description can go here." };
 	star5 = { x: 100, y: 265, name: 'star5', hover: false, desc: "Some description can go here." };
-	var donkey = [star1, star2, star3, star4, star5];
+	donkeyObj.stars = [star1, star2, star3, star4, star5];
 
-	// var casseopeia = [[95,500],[145,604],[195,552],[245,620],[325,560]];
+	var cassyObj = {
+		x: 205,
+		y: 560,
+		r: 140,
+		name: "Casseopeia"
+	}
+
 	star6 = { x: 95, y: 500, name: 'star6', hover: false, desc: "Some description can go here." };
 	star7 = { x: 145, y: 604, name: 'star7', hover: false, desc: "Some description can go here." };
 	star8 = { x: 195, y: 552, name: 'Concatenating Kittens', hover: false, desc: "Display values of differing types." };
 	star9 = { x: 245, y: 620, name: 'star9', hover: false, desc: "Some description can go here." };
 	star10 = { x: 325, y: 560, name: 'star10', hover: false, desc: "Some description can go here." };
-	var casseopeia = [star6, star7, star8, star9, star10];
+	cassyObj.stars = [star6, star7, star8, star9, star10];
 
-	var galaxy = [donkey, casseopeia];
+	var fezObj = {
+		x: 580,
+		y: 365,
+		r: 140,
+		name: "Fez",
+		hover: false
+	}
+
+	star11 = { x: 480, y: 410, name: 'star11', hover: false, desc: "Some description can go here." };
+	star12 = { x: 510, y: 310, name: 'star12', hover: false, desc: "Some description can go here." };
+	star13 = { x: 651, y: 301, name: 'Star13', hover: false, desc: "Display values of differing types." };
+	star14 = { x: 680, y: 400, name: 'star14', hover: false, desc: "Some description can go here." };
+	fezObj.stars = [star11, star12, star13, star14];
+
+	var galaxy = [donkeyObj, cassyObj];
 
 	////////////////////////////////////
 	/////  Helper Functions  ///////////
@@ -106,7 +122,6 @@ function canvasApp () {
 		var c = constellation;
 		var drawLast = [];
 
-		context.fillStyle = "#f6d62b";
 		context.strokeStyle ="#FFFFFF";
 		context.shadowBlur = 10;
 		context.shadowColor = "#c164fa";
@@ -179,15 +194,21 @@ function canvasApp () {
 		var y = star.y;
 		context.lineWidth = 2;
 		context.fillStyle = "#002222";
+		if (x<100) {
+			x += 50;
+		}
+		if (y<100) {
+			y = y + 120;
+		}
 		context.rect(x-100,y-100, 250, 80);
 		context.fillRect(x-100,y-100, 250, 80);
 		context.stroke();
 		context.shadowBlur = 0;
 		context.fillStyle = "#a0a0a0";
 		context.font = "18px Monospace";
-		context.fillText(star.name, star.x-90, star.y-90);
+		context.fillText(star.name, x-90, y-90);
 		context.font = "12px Monospace";
-		context.fillText(star.desc, star.x-90, star.y-65);
+		context.fillText(star.desc, x-90, y-65);
 	}
 
 	function scaler(coordArray, scale){
@@ -228,12 +249,11 @@ function canvasApp () {
 	}
 
 	function mousePos(event) {
-		// mx = Math.round(event.clientX - stage.left);  // also, stage, mx, my are global in canvasAPP
-		// my = Math.round(event.clientY - stage.top);
 		mx = event.clientX - stage.left + 0.5 | 0;  // faster "rounding"
 		my = event.clientY - stage.top + 0.5 | 0;
-		// $("#debug-mouse").html(mx + " || " + my);
+		$("#debug-mouse").html(mx + " || " + my);
 	}
+
 	function dashCircleDonkey() {
 		if (donkeyHover) {
 			context.globalAlpha = 0.8;
@@ -250,9 +270,17 @@ function canvasApp () {
 			context.stroke();
 			context.closePath();
 		}
-
 		context.globalAlpha = 1;
 	}
+	//
+	// function donkeyToolTip() {
+	// 	if (donkeyHover && !onDonkeyStar) {
+	// 		console.log(onDonkeyStar);
+	// 		context.strokeStyle = "#ff4aff";
+	// 		context.fillStyle = "#ff4aff";
+	// 		context.strokeRect(500, 250, 200, 100);
+	// 	}
+	// }
 
 	function dashCircleCassy() {
 		if (cassyHover) {
@@ -273,12 +301,24 @@ function canvasApp () {
 		context.globalAlpha = 1;
 	}
 
-	function boxInCassy() {
-		context.lineWidth = 2;
-		context.globalAlpha = 0.25;
+	function dashCircleConst(cluster) {
+		console.log(cluster.hover);
+		if (cluster.hover) {
+			context.globalAlpha = 0.8;
+		} else {
+			context.globalAlpha = 0.25;
+		}
 		context.strokeStyle = "#ff4aff";
-		context.rect(75, 470, 275, 190);
-		context.stroke();
+		context.lineWidth = 2;
+		var end = 2*Math.PI;
+		for (start=0; start<end; start += end/50) {
+			context.beginPath();
+			context.arc(cluster.x, cluster.y, cluster.r, start, start+0.06283185307179587, false);
+			context.closePath();
+			context.stroke();
+			context.closePath();
+		}
+		context.globalAlpha = 1;
 	}
 
 	/////////////////////////   *
@@ -293,11 +333,11 @@ function canvasApp () {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
 		//image
-    context.globalAlpha = .25;
+    context.globalAlpha = .5;
 		context.drawImage(nebulaImg, 0, 0, canvas.width, canvas.height);
 		context.globalAlpha = 1;
 
-		//text
+		// //text
 		context.font         = "72px Monospace";
 		context.textBaseline = "top";
 
@@ -351,7 +391,9 @@ function canvasApp () {
 			}
 		}
 
-		// event handlers
+		//////////////////////////////////   *
+		////////// Star hit testing //////   *
+		//////////////////////////////////   *
 
 		$(canvas).mousemove(function(event){
 			mousePos(event);
@@ -373,37 +415,44 @@ function canvasApp () {
 		// 	}
 		// }
 
-		for (i=0; i<casseopeia.length; i++){
-			star = casseopeia[i];
+		for (i=0; i<cassyObj.stars.length; i++){
+			star = cassyObj.stars[i];
 			if ((mx >= star.x - 10) && (mx <= star.x + 10) && (my >= star.y - 10) && (my <= star.y + 10)) {
 				star.hover = true;
+				onCassyStar = true;
 			} else {
 				star.hover = false;
+				onCassyStar = false;
 			}
 		}
 
-		for (i=0; i<donkey.length; i++){
-			star = donkey[i];
+		for (i=0; i<donkeyObj.stars.length; i++){
+			star = donkeyObj.stars[i];
+			star.hover = false;
+			// donkeyToolTip();
+			onDonkeyStar = false;
 			if ((mx >= star.x -10) && (mx <= star.x + 10) && (my >= star.y - 10) && (my <= star.y + 10)) {
 				star.hover = true;
-			} else {
+				onDonkeyStar = true;
+				console.log(onDonkeyStar);
+			}
+			else {
 				star.hover = false;
+				// donkeyToolTip();
+				onDonkeyStar = false;
 			}
 		}
 
-		dashCircleDonkey();
-		dashCircleCassy();
-
-		plotPaths(donkey);
-		plotPaths(casseopeia);
-		plotPoints(donkey);
-		plotPoints(casseopeia);
-
-
-
-		//////////////////////////////////   *
-		// Constellation hit testing /////   *
-		//////////////////////////////////   *
+		for (i=0; i<fezObj.stars.length; i++){
+			star = fezObj.stars[i];
+			if ((mx >= star.x - 10) && (mx <= star.x + 10) && (my >= star.y - 10) && (my <= star.y + 10)) {
+				star.hover = true;
+				onfezStar = true;
+			} else {
+				star.hover = false;
+				onfezStar = false;
+			}
+		}
 
 		var donkeyDistX = (donkeyObj.x - mx) * (donkeyObj.x - mx);
 		var donkeyDistY = (donkeyObj.y - my) * (donkeyObj.y - my);
@@ -411,20 +460,86 @@ function canvasApp () {
 
 		//
 		if (donkeyDistSquared < donkeyObj.r * donkeyObj.r) {
-			context.fillStyle = "red";
-			context.fillRect(0,0,10,10);
 			donkeyHover = true;
 		} else {
 			donkeyHover = false;
 		}
+
+		var fezDistX = (fezObj.x - mx) * (fezObj.x - mx);
+		var fezDistY = (fezObj.y - my) * (fezObj.y - my);
+		var fezDistSquared = fezDistX + fezDistY;
+		//
+		if (fezDistSquared < fezObj.r * fezObj.r) {
+			fezObj.hover = true;
+		} else {
+			fezObj.hover = false;
+		}
+
+		dashCircleDonkey();
+		dashCircleCassy();
+		dashCircleConst(fezObj);
+
+		// donkey tooltip
+		if (donkeyHover) {
+			xOrig = 390;
+			yOrig = 175;
+			context.strokeStyle = "#ff4aff";
+			context.fillStyle = "rgba(0, 0, 0, 0.5)";
+			context.fillRect(xOrig,yOrig,203,125);
+
+			context.font = "14px Monospace";
+			context.fillStyle = "#FFFFFF";
+			context.fillText("Cluster: El Burro", xOrig+10, yOrig + 10);
+			context.fillText("Badges Required: :)  ;)", xOrig+10, yOrig+30);
+			context.fillText("Badges Awarded: :{  ;{", xOrig+10, yOrig+50);
+		}
+
+		if (cassyHover) {
+			xOrig = 370;
+			yOrig = 525;
+			context.strokeStyle = "#ff4aff";
+			context.fillStyle = "rgba(0, 0, 0, 0.5)";
+			context.fillRect(xOrig,yOrig,203,125);
+
+			context.font = "14px Monospace";
+			context.fillStyle = "#FFFFFF";
+			context.fillText("Cluster: Casseopeia", xOrig+10, yOrig + 10);
+			context.fillText("Badges Required: :)  ;)", xOrig+10, yOrig+30);
+			context.fillText("Badges Awarded: :{  ;{", xOrig+10, yOrig+50);
+		}
+
+		if (fezObj.hover) {
+			xOrig = fezObj.x +170;
+			yOrig = fezObj.y-30;
+			context.strokeStyle = "#ff4aff";
+			context.fillStyle = "rgba(0, 0, 0, 0.5)";
+			context.fillRect(xOrig,yOrig,203,125);
+
+			context.font = "14px Monospace";
+			context.fillStyle = "#FFFFFF";
+			context.fillText("Cluster: Fez", xOrig+10, yOrig + 10);
+			context.fillText("Badges Required: :)  ;)", xOrig+10, yOrig+30);
+			context.fillText("Badges Awarded: :{  ;{", xOrig+10, yOrig+50);
+		}
+
+		plotPaths(donkeyObj.stars);
+		plotPaths(cassyObj.stars);
+		console.log(fezObj.stars);
+		plotPaths(fezObj.stars);
+
+		plotPoints(donkeyObj.stars);
+		plotPoints(cassyObj.stars);
+		plotPoints(fezObj.stars);
+
+		//////////////////////////////////   *
+		// Constellation hit testing /////   *
+		//////////////////////////////////   *
 
 		var cassyDistX = (cassyObj.x - mx) * (cassyObj.x - mx);
 		var cassyDistY = (cassyObj.y - my) * (cassyObj.y - my);
 		var cassyDistSquared = cassyDistX + cassyDistY;
 
 		if (cassyDistSquared < cassyObj.r * cassyObj.r) {
-			context.fillStyle = "pink";
-			context.fillRect(0,10,10,10);
 			cassyHover = true;
 		} else {
 			cassyHover = false;
